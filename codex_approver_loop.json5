@@ -1,0 +1,18 @@
+// Run with KeymouseGo "run times" = 1; the goto keeps it looping until stopped.
+{
+  scripts: [
+    {
+      type: "event",
+      label: "loop",
+      delay: 400,
+      event_type: "EM",
+      action_type: "mouse move",
+      action: [-1, -1],
+      call: ["codex_scan"],
+    },
+    {
+      type: "goto",
+      tolabel: "loop",
+    },
+  ],
+}

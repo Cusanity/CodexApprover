@@ -1,0 +1,79 @@
+// KeymouseGo plugin: answers Codex CLI approval prompts by reading the Codex console
+// and writing keys straight into its input (no focus, no mouse, no screen coordinates).
+{
+  name: "Codex Approver",
+  description: "Auto-approves every Codex CLI prompt (commands, edits, permissions, network, MCP) as a fallback to approval_policy = \"never\"",
+  author: "local",
+  version: "1.0",
+  entry: "CodexApprover.py",
+  plugin_class: "CodexApprover",
+
+  // Executables whose console is scanned. Codex's app-server daemon has no console and is skipped automatically.
+  // Elevated (admin) Codex terminals are only reachable when KeymouseGo itself runs as administrator;
+  // otherwise they are skipped with a one-time warning + beep.
+  process_names: ["codex.exe"],
+
+  // Poll interval (ms) while a Codex process exists / while none exists.
+  poll_ms: 400,
+  idle_poll_ms: 3000,
+
+  // A prompt only counts if its footer is within the last `footer_window` non-blank lines of the screen,
+  // and its option line is within `option_window` non-blank lines above the footer.
+  // This keeps transcript text that merely mentions a prompt from being answered.
+  footer_window: 6,
+  option_window: 24,
+
+  // After sending keys, re-read for up to verify_ms; success = the prompt changed or closed.
+  verify_ms: 1200,
+  // Give up on a prompt that never closes after this many attempts (then alert once).
+  max_attempts: 3,
+
+  // First matching rule wins. `footer` and `option` are Python regexes, matched per line.
+  // If a rule's keys fail to clear the prompt `max_attempts` times, the next matching rule is tried.
+  rules: [
+    {
+      // Persistent approval: "don't ask again for commands that start with `...`" / "allow this host in the future" (p).
+      name: "approval-always-prefix",
+      footer: "Press enter to confirm or esc to cancel",
+      option: "^\\s*(›\\s*)?\\d+\\.\\s+Yes, and (don.t ask again for commands that start with|allow this host in the future)\\b",
+      keys: ["p"],
+    },
+    {
+      // Session approval: "don't ask again for these files / this command in this session",
+      // "allow this host for this conversation", "allow/grant these permissions for this session" (a).
+      name: "approval-always-session",
+      footer: "Press enter to confirm or esc to cancel",
+      option: "^\\s*(›\\s*)?\\d+\\.\\s+Yes, (and don.t ask again for (these files|this command in this session)|and allow this host for this conversation|(and allow|grant) these permissions for this session)\\b",
+      keys: ["a"],
+    },
+    {
+      // Commands, file edits, permission grants, network access: option 1 "Yes, ..." has the (y) shortcut.
+      name: "approval",
+      footer: "Press enter to confirm or esc to cancel",
+      option: "^\\s*(›\\s*)?\\d+\\.\\s+Yes\\b.*\\(y\\)\\s*$",
+      keys: ["y"],
+    },
+    {
+      // MCP elicitation / tool approval form: "Allow this request?" with "1. Allow" highlighted.
+      name: "mcp-elicitation",
+      footer: "enter to submit \\| esc to cancel",
+      option: "^\\s*›\\s*1\\.\\s+(Allow|Yes|Accept|Approve|Submit)\\b",
+      keys: ["enter"],
+    },
+    {
+      // Any other picker whose highlighted option is an affirmative choice (e.g. folder trust).
+      name: "affirmative-highlighted",
+      footer: "(?i)press enter|enter to (confirm|continue|submit|select)",
+      option: "^\\s*›\\s*(\\d+\\.\\s+)?(Yes|Allow|Approve|Accept|Trust|Continue)\\b",
+      keys: ["enter"],
+    },
+  ],
+
+  // Footer text that looks like a prompt but matched no rule -> beep + screen dump to logs\ (once per prompt).
+  alert_hint: "(?i)esc to cancel|enter to (confirm|submit|continue)|\\(y/n\\)",
+
+  // Opt-in last resort: if console injection fails AND VS Code is the foreground window,
+  // let KeymouseGo press the key with simulated keyboard events (codex_keys_fallback.json5).
+  allow_key_fallback: false,
+  key_fallback_foreground: ["code.exe"],
+}
