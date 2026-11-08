@@ -102,9 +102,13 @@ class CodexApprover(PluginInterface):
         while time.time() < deadline:
             time.sleep(0.1)
             try:
-                if self._match(cc.read_screen(pid)[1]) != result:
-                    return True
+                cleared = self._match(cc.read_screen(pid)[1]) != result
             except OSError:
+                cleared = True
+            if cleared:
+                # Codex often repeats an identical prompt (same command/input); only failures should count.
+                self.attempts.pop((sig, name), None)
+                self.alerted.discard(sig)
                 return True
         return True
 
