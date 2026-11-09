@@ -45,8 +45,10 @@ class CodexApprover(PluginInterface):
             for fi, line in enumerate(tail):
                 if footer_re.search(line):
                     above = lines[:len(lines) - len(tail) + fi][-ow:]
-                    if any(option_re.search(o) for o in above):
-                        found.append((name, keys))
+                    m = next(filter(None, (option_re.search(o) for o in above)), None)
+                    if m:
+                        # '{n}' sends the option number captured by the rule's (?P<n>...) group.
+                        found.append((name, [d for k in keys for d in (list(m['n']) if k == '{n}' else [k])]))
                         break
         if found:
             return 'rule', found

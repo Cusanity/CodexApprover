@@ -1,6 +1,6 @@
 # CodexApprover
 
-A Windows KeymouseGo plugin that recognizes Codex CLI approval prompts and sends the matching approval keys directly to the console, without changing window focus or using screen coordinates.
+A Windows KeymouseGo plugin that recognizes Codex CLI and Claude Code approval prompts and sends the matching approval keys directly to the console, without changing window focus or using screen coordinates.
 
 The default rules automatically approve matching requests, including persistent or session approval choices when available.
 

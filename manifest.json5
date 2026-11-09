@@ -2,7 +2,7 @@
 // and writing keys straight into its input (no focus, no mouse, no screen coordinates).
 {
   name: "Codex Approver",
-  description: "Auto-approves every Codex CLI prompt (commands, edits, permissions, network, MCP) as a fallback to approval_policy = \"never\"",
+  description: "Auto-approves Codex CLI and Claude Code prompts (commands, edits, permissions, network, MCP)",
   author: "local",
   version: "1.0",
   entry: "CodexApprover.py",
@@ -11,7 +11,8 @@
   // Executables whose console is scanned. Codex's app-server daemon has no console and is skipped automatically.
   // Elevated (admin) Codex terminals are only reachable when KeymouseGo itself runs as administrator;
   // otherwise they are skipped with a one-time warning + beep.
-  process_names: ["codex.exe"],
+  // claude.exe is the native Claude Code install; an npm install runs as node.exe (add it if needed).
+  process_names: ["codex.exe", "claude.exe"],
 
   // Poll interval (ms) while a Codex process exists / while none exists.
   poll_ms: 400,
@@ -67,10 +68,32 @@
       option: "^\\s*›\\s*(\\d+\\.\\s+)?(Yes|Allow|Approve|Accept|Trust|Continue)\\b",
       keys: ["enter"],
     },
+    // Claude Code: "Do you want to proceed?" picker with no key hints; the last option ("N. No") is the footer.
+    // Claude selects an option when its number is pressed; "{n}" sends the number captured by (?P<n>...).
+    {
+      // "Yes, and don't ask again for: node *" / "Yes, allow all edits during this session".
+      name: "claude-always",
+      footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+No(, and tell Claude\\b.*)?\\s*$",
+      option: "^\\s*([❯›>]\\s*)?(?P<n>\\d+)\\.\\s+Yes, (and don.t ask again\\b|allow all edits during this session\\b)",
+      keys: ["{n}"],
+    },
+    {
+      name: "claude-yes",
+      footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+No(, and tell Claude\\b.*)?\\s*$",
+      option: "^\\s*([❯›>]\\s*)?(?P<n>\\d+)\\.\\s+Yes\\s*$",
+      keys: ["{n}"],
+    },
+    {
+      // Fallback if number keys are ignored: confirm the highlighted "Yes".
+      name: "claude-yes-enter",
+      footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+No(, and tell Claude\\b.*)?\\s*$",
+      option: "^\\s*[❯›>]\\s*\\d+\\.\\s+Yes\\b",
+      keys: ["enter"],
+    },
   ],
 
   // Footer text that looks like a prompt but matched no rule -> beep + screen dump to logs\ (once per prompt).
-  alert_hint: "(?i)esc to cancel|enter to (confirm|submit|continue)|\\(y/n\\)",
+  alert_hint: "(?i)esc to cancel|enter to (confirm|submit|continue)|\\(y/n\\)|^\\s*Do you want to\\b",
 
   // Opt-in last resort: if console injection fails AND VS Code is the foreground window,
   // let KeymouseGo press the key with simulated keyboard events (codex_keys_fallback.json5).
