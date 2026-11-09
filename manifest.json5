@@ -84,6 +84,19 @@
       keys: ["{n}"],
     },
     {
+      // "Session paused" (safeguards flagged): "1. Switch to Opus 4.8" above "2. Edit prompt and retry with ...".
+      name: "claude-session-paused-switch",
+      footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+Edit prompt and retry\\b",
+      option: "^\\s*([❯›>]\\s*)?(?P<n>\\d+)\\.\\s+Switch to \\S+",
+      keys: ["{n}"],
+    },
+    {
+      name: "claude-session-paused-switch-enter",
+      footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+Edit prompt and retry\\b",
+      option: "^\\s*[❯›>]\\s*\\d+\\.\\s+Switch to \\S+",
+      keys: ["enter"],
+    },
+    {
       // Fallback if number keys are ignored: confirm the highlighted "Yes".
       name: "claude-yes-enter",
       footer: "^\\s*([❯›>]\\s*)?\\d+\\.\\s+No(, and tell Claude\\b.*)?\\s*$",
