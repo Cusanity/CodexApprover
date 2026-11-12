@@ -15,9 +15,25 @@ The plugin uses KeymouseGo's `Plugin.Interface` and `loguru` environment. It is 
 
 Elevated Codex terminals require KeymouseGo to run as administrator. Unrecognized prompts and prompts that remain open after retries trigger an alert; diagnostic console text is saved under `logs/`.
 
+## GitHub Copilot hook
+
+Copilot (VS Code Copilot sessions and Copilot CLI) prompts in its own UI rather than a console, so it uses a `permissionRequest` hook instead of KeymouseGo:
+
+```powershell
+python install_copilot_hook.py              # writes %USERPROFILE%\.copilot\hooks\codex-approver.json
+python install_copilot_hook.py --uninstall  # removes it
+```
+
+Start a new Copilot session after installing. By default the hook approves every permission request. Optional rules in `copilot_hook_config.json`: `ask_patterns` show the normal prompt for matching tool input, `deny_patterns` block outright and `ask_tools` always prompt for the named tools. Set `enabled` to `false` to disable without uninstalling. Decisions are logged to `logs/copilot_hook.log`. Sandbox-escape requests always prompt because Copilot ignores hook approval for them, and errors fall through to the normal prompt.
+
+The installer stores the absolute paths of the current Python interpreter and this folder, so rerun it after moving either. Organization policy can disable user hooks.
+
 ## Files
 
 - `CodexApprover.py`: plugin entry point, prompt matching, retries, and alerts.
 - `codex_console.py`: Windows console access and key injection using `ctypes`.
 - `manifest.json5`: plugin metadata and configurable prompt rules.
 - `codex_approver_loop.json5`: looping KeymouseGo script that calls `codex_scan`.
+- `copilot_approver_hook.py`: GitHub Copilot `permissionRequest` hook.
+- `copilot_hook_config.json`: hook rules.
+- `install_copilot_hook.py`: installs or removes the user-level hook.

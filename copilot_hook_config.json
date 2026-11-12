@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "log": true,
+  "deny_patterns": [],
+  "ask_tools": [],
+  "ask_patterns": [
+    "(?i)\\brm\\s+(-\\w*\\s+)*-\\w*[rf]\\w*\\s+(/|~|\\*|[A-Za-z]:\\\\?)(\\s|$)",
+    "(?i)\\bRemove-Item\\b.*\\s-Recurse\\b.*\\s([A-Za-z]:\\\\?|~|\\$env:USERPROFILE|\\$HOME)(\\s|$)",
+    "(?i)\\b(rd|rmdir)\\s+/s\\b.*\\b[A-Za-z]:\\\\?(\\s|$)",
+    "(?i)\\b(format(-volume)?|diskpart|mkfs(\\.\\w+)?|Clear-Disk|Initialize-Disk)\\b",
+    "(?i)\\b(shutdown|Restart-Computer|Stop-Computer)\\b",
+    "(?i)\\bgit\\s+push\\b.*(\\s--force\\b|\\s-f\\b|\\s--mirror\\b|\\s--delete\\b)",
+    "(?i)\\bgit\\s+(reset\\s+--hard|clean\\s+-\\w*[fdx])\\b",
+    "(?i)\\bgh\\s+repo\\s+delete\\b",
+    "(?i)\\breg(\\.exe)?\\s+delete\\b"
+  ]
+}
